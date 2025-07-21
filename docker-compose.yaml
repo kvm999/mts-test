@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for MTS
+  postgres-mts:
+    image: postgres:16-alpine
+    restart: always
+    env_file:
+      - ./docker/postgres.env
+    ports:
+      - "25432:5432"
+    volumes:
+      - ./docker/postgres-mts:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mts"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
