@@ -1,0 +1,23 @@
+# MTS Backend Configuration
+
+logger:
+  level: "info"  # Options: debug, info, warn, error
+
+postgres:
+  host: "localhost"
+  port: 25432
+  username: "mts"
+  password: "mts_password_2024"
+  database: "mts"
+  ssl_mode: "disable"
+  max_conns: 25
+  min_conns: 5
+  max_conn_lifetime: "1h"
+  max_conn_idle_time: "30m"
+  health_check_period: "1m"
+
+service:
+  jwt_secret: "mts_jwt_secret_key_2024_very_long_and_secure_string_here"
+  token_lifetime: 8h
+  host: "0.0.0.0"
+  port: 8080 
