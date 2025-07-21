@@ -1,0 +1,939 @@
+basePath: /
+definitions:
+  CreateOrderItemRequest:
+    description: Request item for creating an order
+    properties:
+      product_id:
+        description: |-
+          Product ID
+          @Description ID of the product to order
+          @Example 456e7890-e12b-34d5-a678-901234567890
+        example: 456e7890-e12b-34d5-a678-901234567890
+        type: string
+      quantity:
+        description: |-
+          Quantity
+          @Description Quantity to order
+          @Example 2
+        example: 2
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  CreateOrderRequest:
+    description: Request payload for creating an order
+    properties:
+      items:
+        description: |-
+          Items
+          @Description List of items to order (at least one required)
+        items:
+          $ref: '#/definitions/CreateOrderItemRequest'
+        minItems: 1
+        type: array
+      user_id:
+        description: |-
+          User ID
+          @Description ID of the user creating the order
+          @Example 123e4567-e89b-12d3-a456-426614174000
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    required:
+    - items
+    - user_id
+    type: object
+  CreateProductRequest:
+    description: Request payload for creating a product
+    properties:
+      description:
+        description: |-
+          Description
+          @Description Product description (required)
+          @Example "High-quality smartphone"
+        example: High-quality smartphone
+        type: string
+      quantity:
+        description: |-
+          Quantity
+          @Description Initial quantity in stock
+          @Example 100
+        example: 100
+        minimum: 0
+        type: integer
+      tags:
+        description: |-
+          Tags
+          @Description Product tags for categorization
+          @Example ["electronics", "mobile"]
+        example:
+        - electronics
+        - mobile
+        items:
+          type: string
+        type: array
+    required:
+    - description
+    - quantity
+    type: object
+  CreateUserRequest:
+    description: Request payload for user registration
+    properties:
+      age:
+        description: |-
+          Age
+          @Description User's age (must be 18 or older)
+          @Example 25
+        example: 25
+        minimum: 18
+        type: integer
+      first_name:
+        description: |-
+          First name
+          @Description User's first name (required)
+          @Example John
+        example: John
+        type: string
+      is_married:
+        description: |-
+          Is married
+          @Description Whether the user is married
+          @Example false
+        example: false
+        type: boolean
+      last_name:
+        description: |-
+          Last name
+          @Description User's last name (required)
+          @Example Doe
+        example: Doe
+        type: string
+      password:
+        description: |-
+          Password
+          @Description User's password (minimum 8 characters)
+          @Example password123
+        example: password123
+        minLength: 8
+        type: string
+    required:
+    - age
+    - first_name
+    - last_name
+    - password
+    type: object
+  ErrorResponse:
+    description: Error response format
+    properties:
+      code:
+        description: |-
+          Error code (optional)
+          @Description Machine-readable error code
+          @Example "INVALID_INPUT"
+        example: INVALID_INPUT
+        type: string
+      message:
+        description: |-
+          Error message
+          @Description Human-readable error message
+          @Example "Validation failed"
+        example: Validation failed
+        type: string
+    type: object
+  Order:
+    description: Order information with items
+    properties:
+      created_at:
+        description: |-
+          Created at
+          @Description When the order was created
+          @Example 2024-01-15T10:30:00Z
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      id:
+        description: |-
+          Order ID
+          @Description Unique identifier for the order
+          @Example 987e6543-e21d-12c3-b456-426614174000
+        example: 987e6543-e21d-12c3-b456-426614174000
+        type: string
+      items:
+        description: |-
+          Items
+          @Description List of items in the order
+        items:
+          $ref: '#/definitions/OrderItem'
+        type: array
+      status:
+        description: |-
+          Status
+          @Description Current order status
+          @Example "pending"
+        example: pending
+        type: string
+      total_quantity:
+        description: |-
+          Total quantity
+          @Description Total quantity of all items in the order
+          @Example 5
+        example: 5
+        type: integer
+      updated_at:
+        description: |-
+          Updated at
+          @Description When the order was last updated
+          @Example 2024-01-15T10:30:00Z
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      user_id:
+        description: |-
+          User ID
+          @Description ID of the user who created the order
+          @Example 123e4567-e89b-12d3-a456-426614174000
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  OrderItem:
+    description: Order item with historical product information
+    properties:
+      created_at:
+        description: |-
+          Created at
+          @Description When the order item was created
+          @Example 2024-01-15T10:30:00Z
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      id:
+        description: |-
+          Item ID
+          @Description Unique identifier for the order item
+          @Example 789e0123-e45f-67g8-h901-234567890123
+        example: 789e0123-e45f-67g8-h901-234567890123
+        type: string
+      product_id:
+        description: |-
+          Product ID
+          @Description ID of the product (current)
+          @Example 456e7890-e12b-34d5-a678-901234567890
+        example: 456e7890-e12b-34d5-a678-901234567890
+        type: string
+      product_snapshot:
+        allOf:
+        - $ref: '#/definitions/ProductSnapshot'
+        description: |-
+          Product snapshot
+          @Description Historical product information at order time
+      quantity:
+        description: |-
+          Quantity
+          @Description Quantity of the product in the order
+          @Example 2
+        example: 2
+        type: integer
+    type: object
+  OrdersResponse:
+    description: Paginated response containing list of orders
+    properties:
+      orders:
+        description: |-
+          Orders
+          @Description List of orders
+        items:
+          $ref: '#/definitions/Order'
+        type: array
+      pagination:
+        allOf:
+        - $ref: '#/definitions/Pagination'
+        description: |-
+          Pagination
+          @Description Pagination information
+    type: object
+  Pagination:
+    description: Pagination metadata for API responses
+    properties:
+      page:
+        description: |-
+          Page number (1-based)
+          @Description Current page number
+          @Example 1
+        example: 1
+        type: integer
+      size:
+        description: |-
+          Size (items per page)
+          @Description Number of items per page
+          @Example 10
+        example: 10
+        type: integer
+      total:
+        description: |-
+          Total count
+          @Description Total number of items available
+          @Example 100
+        example: 100
+        type: integer
+      total_pages:
+        description: |-
+          Total pages
+          @Description Total number of pages
+          @Example 10
+        example: 10
+        type: integer
+    type: object
+  Product:
+    description: Product information
+    properties:
+      available:
+        description: |-
+          Available
+          @Description Whether the product is available (quantity > 0)
+          @Example true
+        example: true
+        type: boolean
+      created_at:
+        description: |-
+          Created at
+          @Description When the product was created
+          @Example 2024-01-15T10:30:00Z
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      description:
+        description: |-
+          Description
+          @Description Product description
+          @Example "High-quality smartphone"
+        example: High-quality smartphone
+        type: string
+      id:
+        description: |-
+          Product ID
+          @Description Unique identifier for the product
+          @Example 456e7890-e12b-34d5-a678-901234567890
+        example: 456e7890-e12b-34d5-a678-901234567890
+        type: string
+      quantity:
+        description: |-
+          Quantity
+          @Description Available quantity in stock
+          @Example 100
+        example: 100
+        type: integer
+      tags:
+        description: |-
+          Tags
+          @Description Product tags for categorization
+          @Example ["electronics", "mobile"]
+        example:
+        - electronics
+        - mobile
+        items:
+          type: string
+        type: array
+      updated_at:
+        description: |-
+          Updated at
+          @Description When the product was last updated
+          @Example 2024-01-15T10:30:00Z
+        example: "2024-01-15T10:30:00Z"
+        type: string
+    type: object
+  ProductSnapshot:
+    description: Historical product data captured at order time
+    properties:
+      description:
+        description: |-
+          Description
+          @Description Product description at order time
+          @Example "High-quality smartphone"
+        example: High-quality smartphone
+        type: string
+      tags:
+        description: |-
+          Tags
+          @Description Product tags at order time
+          @Example ["electronics", "mobile"]
+        example:
+        - electronics
+        - mobile
+        items:
+          type: string
+        type: array
+    type: object
+  ProductsResponse:
+    description: Paginated response containing list of products
+    properties:
+      pagination:
+        allOf:
+        - $ref: '#/definitions/Pagination'
+        description: |-
+          Pagination
+          @Description Pagination information
+      products:
+        description: |-
+          Products
+          @Description List of products
+        items:
+          $ref: '#/definitions/Product'
+        type: array
+    type: object
+  UpdateOrderRequest:
+    description: Request payload for updating order status
+    properties:
+      status:
+        description: |-
+          Status
+          @Description New order status
+          @Example "confirmed"
+        enum:
+        - pending
+        - confirmed
+        - cancelled
+        - completed
+        example: confirmed
+        type: string
+    required:
+    - status
+    type: object
+  UpdateProductRequest:
+    description: Request payload for updating a product
+    properties:
+      description:
+        description: |-
+          Description
+          @Description Product description (optional)
+          @Example "Updated smartphone description"
+        example: Updated smartphone description
+        type: string
+      quantity:
+        description: |-
+          Quantity
+          @Description Quantity in stock (optional)
+          @Example 150
+        example: 150
+        minimum: 0
+        type: integer
+      tags:
+        description: |-
+          Tags
+          @Description Product tags for categorization (optional)
+          @Example ["electronics", "mobile", "updated"]
+        example:
+        - electronics
+        - mobile
+        - updated
+        items:
+          type: string
+        type: array
+    type: object
+  User:
+    description: User information
+    properties:
+      age:
+        description: |-
+          Age
+          @Description User's age (must be 18 or older)
+          @Example 25
+        example: 25
+        type: integer
+      created_at:
+        description: |-
+          Created at
+          @Description When the user was created
+          @Example 2024-01-15T10:30:00Z
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      first_name:
+        description: |-
+          First name
+          @Description User's first name
+          @Example John
+        example: John
+        type: string
+      full_name:
+        description: |-
+          Full name
+          @Description User's full name (first + last)
+          @Example John Doe
+        example: John Doe
+        type: string
+      id:
+        description: |-
+          User ID
+          @Description Unique identifier for the user
+          @Example 123e4567-e89b-12d3-a456-426614174000
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      is_married:
+        description: |-
+          Is married
+          @Description Whether the user is married
+          @Example false
+        example: false
+        type: boolean
+      last_name:
+        description: |-
+          Last name
+          @Description User's last name
+          @Example Doe
+        example: Doe
+        type: string
+    type: object
+  UsersResponse:
+    description: Paginated response containing list of users
+    properties:
+      pagination:
+        allOf:
+        - $ref: '#/definitions/Pagination'
+        description: |-
+          Pagination
+          @Description Pagination information
+      users:
+        description: |-
+          Users
+          @Description List of users
+        items:
+          $ref: '#/definitions/User'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: API Support
+  description: MTS test assignment API for managing users, products and orders
+  title: MTS API
+  version: "1.0"
+paths:
+  /api/v1/orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of all orders in the system
+      parameters:
+      - default: 1
+        description: Page number for pagination
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      - description: Filter orders by user ID
+        format: uuid
+        in: query
+        name: user_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Orders retrieved successfully
+          schema:
+            $ref: '#/definitions/OrdersResponse'
+        "400":
+          description: Bad request - invalid pagination parameters or user ID
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get orders list
+      tags:
+      - Orders
+    post:
+      consumes:
+      - application/json
+      description: Create a new order with multiple items, automatically handles stock
+        reservation
+      parameters:
+      - description: Order creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Order created successfully
+          schema:
+            $ref: '#/definitions/Order'
+        "400":
+          description: Bad request - validation failed or insufficient stock
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not found - user or product not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create new order
+      tags:
+      - Orders
+  /api/v1/orders/{order_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve detailed information about a specific order using its
+        unique identifier
+      parameters:
+      - description: Order unique identifier
+        format: uuid
+        in: path
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Order information retrieved successfully
+          schema:
+            $ref: '#/definitions/Order'
+        "400":
+          description: Bad request - invalid order ID format
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not found - order with specified ID does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get order by ID
+      tags:
+      - Orders
+    put:
+      consumes:
+      - application/json
+      description: Update an existing order's status or other mutable fields
+      parameters:
+      - description: Order unique identifier
+        format: uuid
+        in: path
+        name: order_id
+        required: true
+        type: string
+      - description: Order update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Order updated successfully
+          schema:
+            $ref: '#/definitions/Order'
+        "400":
+          description: Bad request - invalid order ID format or validation failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not found - order with specified ID does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update order
+      tags:
+      - Orders
+  /api/v1/orders/{order_id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel an order and restore product quantities back to inventory
+      parameters:
+      - description: Order unique identifier
+        format: uuid
+        in: path
+        name: order_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Order cancelled successfully
+          schema:
+            $ref: '#/definitions/Order'
+        "400":
+          description: Bad request - invalid order ID format or order cannot be cancelled
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not found - order with specified ID does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Cancel order
+      tags:
+      - Orders
+  /api/v1/products:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of all products in the system
+      parameters:
+      - default: 1
+        description: Page number for pagination
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Products retrieved successfully
+          schema:
+            $ref: '#/definitions/ProductsResponse'
+        "400":
+          description: Bad request - invalid pagination parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get products list
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product with description, tags, and initial quantity
+      parameters:
+      - description: Product creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Product created successfully
+          schema:
+            $ref: '#/definitions/Product'
+        "400":
+          description: Bad request - validation failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create new product
+      tags:
+      - Products
+  /api/v1/products/{product_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve detailed information about a specific product using its
+        unique identifier
+      parameters:
+      - description: Product unique identifier
+        format: uuid
+        in: path
+        name: product_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product information retrieved successfully
+          schema:
+            $ref: '#/definitions/Product'
+        "400":
+          description: Bad request - invalid product ID format
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not found - product with specified ID does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get product by ID
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product's information including description,
+        tags, and quantity
+      parameters:
+      - description: Product unique identifier
+        format: uuid
+        in: path
+        name: product_id
+        required: true
+        type: string
+      - description: Product update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product updated successfully
+          schema:
+            $ref: '#/definitions/Product'
+        "400":
+          description: Bad request - invalid product ID format or validation failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not found - product with specified ID does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update product
+      tags:
+      - Products
+  /api/v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of all users in the system
+      parameters:
+      - default: 1
+        description: Page number for pagination
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        maximum: 100
+        minimum: 1
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Users retrieved successfully
+          schema:
+            $ref: '#/definitions/UsersResponse'
+        "400":
+          description: Bad request - invalid pagination parameters
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get users list
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with validation (age >= 18, password >= 8 chars)
+      parameters:
+      - description: User registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            $ref: '#/definitions/User'
+        "400":
+          description: Bad request - validation failed
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Register new user
+      tags:
+      - Users
+  /api/v1/users/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve detailed information about a specific user using their
+        unique identifier
+      parameters:
+      - description: User unique identifier
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information retrieved successfully
+          schema:
+            $ref: '#/definitions/User'
+        "400":
+          description: Bad request - invalid user ID format
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not found - user with specified ID does not exist
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get user by ID
+      tags:
+      - Users
+swagger: "2.0"
+tags:
+- description: User registration and management
+  name: Users
+- description: Product catalog management
+  name: Products
+- description: Order management with stock control
+  name: Orders
