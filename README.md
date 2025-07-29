@@ -4,6 +4,7 @@
 
 ![openapi](./docs/img.png)
 
+
 ## Архитектура
 
 Проект реализован в стиле слойной архитектуры с DDD (Domain Driven Design) подходом:
